@@ -1,43 +1,132 @@
-import FormData from 'form-data';
-import fetch from 'node-fetch';
-import fs from 'fs';
+import fs from 'fs'
+import {createGzip} from 'zlib'
 
-export interface UploadOptions {
-  file: string;
-  url: string;
-  token?: string;
+import FormData from 'form-data'
+
+import {ApiKeyValidator} from './apikey'
+import {RequestBuilder} from './interfaces'
+import {retryRequest} from './retry'
+
+/** Multipart payload destined to be sent to Flashcat's API
+ */
+export interface MultipartPayload {
+  content: Map<string, MultipartValue>
 }
 
-export async function uploadSourcemap(options: UploadOptions): Promise<void> {
-  const { file, url, token } = options;
+export type MultipartValue = MultipartStringValue | MultipartFileValue
 
-  // Check if file exists
-  if (!fs.existsSync(file)) {
-    throw new Error(`File ${file} does not exist`);
+export interface MultipartStringValue {
+  type: 'string'
+  value: string
+  options: FormData.AppendOptions
+}
+
+export interface MultipartFileValue {
+  type: 'file'
+  path: string
+  options: FormData.AppendOptions
+}
+
+export interface UploadOptions {
+  /** ApiKeyValidator (optional) throws an InvalidConfigurationException when upload fails because
+   * of an invalid API key. Callers should most likely catch this exception and display it as a
+   * nice error message.
+   */
+  apiKeyValidator?: ApiKeyValidator
+
+  /** Retries is the amount of upload retries before giving up. Some requests are never retried
+   * (400, 413).
+   */
+  retries: number
+
+  /** Whether to gzip the request */
+  useGzip?: boolean
+
+  /** Callback when upload fails (retries are not considered as failure)
+   */
+  onError(error: Error): void
+
+  /** Callback to execute before retries
+   */
+  onRetry(error: Error, attempts: number): void
+
+  /** Callback to execute before upload.
+   */
+  onUpload(): void
+}
+
+export enum UploadStatus {
+  Success,
+  Failure,
+  Skipped,
+}
+
+/** Upload a MultipartPayload to Flashcat's API using the provided RequestBuilder.
+ * This handles retries as well as logging information about upload if a logger is provided in
+ * the options
+ */
+export const upload = (requestBuilder: RequestBuilder) => async (
+  payload: MultipartPayload,
+  opts: UploadOptions
+): Promise<UploadStatus> => {
+  opts.onUpload()
+  try {
+    await retryRequest(() => uploadMultipart(requestBuilder, payload, opts.useGzip ?? false), {
+      onRetry: opts.onRetry,
+      retries: opts.retries,
+    })
+
+    return UploadStatus.Success
+  } catch (error) {
+    if (opts.apiKeyValidator) {
+      // Raise an exception in case of invalid API key
+      await opts.apiKeyValidator.verifyApiKey(error)
+    }
+    if (error.response && error.response.statusText) {
+      // Rewrite error to have formatted error string
+      opts.onError(new Error(`${error.message} (${error.response.statusText})`))
+    } else {
+      // Default error handling
+      opts.onError(error)
+    }
+
+    return UploadStatus.Failure
+  }
+}
+
+// Dependency follows-redirects sets a default maxBodyLength of 10 MB https://github.com/follow-redirects/follow-redirects/blob/b774a77e582b97174813b3eaeb86931becba69db/index.js#L391
+// We don't want any hard limit enforced by the CLI, the backend will enforce a max size by returning 413 errors.
+const maxBodyLength = Infinity
+
+const uploadMultipart = async (request: RequestBuilder, payload: MultipartPayload, useGzip: boolean) => {
+  const form = new FormData()
+  payload.content.forEach((value: MultipartValue, key: string) => {
+    switch (value.type) {
+      case 'string':
+        form.append(key, value.value, value.options)
+        break
+      case 'file':
+        form.append(key, fs.createReadStream(value.path), value.options)
+        break
+    }
+  })
+
+  let data: any = form
+  let headers = form.getHeaders()
+  if (useGzip) {
+    const gz = createGzip()
+    data = data.pipe(gz)
+    headers = {
+      'Content-Encoding': 'gzip',
+      ...headers,
+    }
   }
 
-  // Create form data
-  const formData = new FormData();
-  formData.append('file', fs.createReadStream(file));
-
-  // Set headers
-  const headers: Record<string, string> = {
-    ...formData.getHeaders(),
-  };
-
-  if (token) {
-    headers['Authorization'] = `Bearer ${token}`;
-  }
-
-  // Upload file
-  const response = await fetch(url, {
-    method: 'POST',
-    body: formData,
+  return request({
+    data,
     headers,
-  });
-
-  if (!response.ok) {
-    const error = await response.text();
-    throw new Error(`Upload failed: ${error}`);
-  }
-} 
+    maxBodyLength,
+    method: 'POST',
+    url: 'v1/input',
+  })
+}

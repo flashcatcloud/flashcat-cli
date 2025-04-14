@@ -1,40 +1,13 @@
-import axios, {AxiosInstance} from 'axios'
-import {API_BASE_URL, DEFAULT_TIMEOUT} from '../constants'
-import {ApiConfig, ErrorResponse} from '../types'
+import {FLASHCAT_SITES} from '../constants'
 
-export class ApiClient {
-  private client: AxiosInstance
-
-  constructor(config: ApiConfig) {
-    this.client = axios.create({
-      baseURL: config.baseUrl || API_BASE_URL,
-      timeout: config.timeout || DEFAULT_TIMEOUT,
-      headers: {
-        'X-API-Key': config.apiKey,
-      },
-    })
+/**
+ * Get the base intake URL for a service. If the `DD_SITE` or `DATADOG_SITE` environment
+ * variables are not defined, use the default site (US1).
+ */
+export const getBaseIntakeUrl = (intake: string) => {
+  if (process.env.FLASHCAT_SITES || process.env.FC_SITE) {
+    return `https://${intake}.${process.env.FLASHCAT_SITES || process.env.FC_SITE}`
   }
 
-  async uploadSourcemap(
-    file: Buffer | NodeJS.ReadableStream,
-    service: string,
-    version: string
-  ): Promise<void> {
-    const form = new FormData()
-    form.append('file', file)
-    form.append('service', service)
-    form.append('version', version)
-
-    try {
-      await this.client.post('/sourcemaps', form, {
-        headers: form.getHeaders(),
-      })
-    } catch (error) {
-      if (axios.isAxiosError(error) && error.response) {
-        const errorResponse = error.response.data as ErrorResponse
-        throw new Error(errorResponse.message || errorResponse.error)
-      }
-      throw error
-    }
-  }
-} 
+  return `https://${intake}.${FLASHCAT_SITES}`
+}

@@ -42,6 +42,13 @@ flashcat-ci sourcemap:upload -f ./dist/main.js.map -u https://api.example.com/up
    npm run dev
    ```
 
+
 ## License
 
-MIT 
+[Apache License, v2.0](LICENSE)
+
+## Credits
+
+This project is forked from [datadog-ci](https://github.com/DataDog/datadog-ci) by Flashcat, Inc.
+Original work Copyright 2020 Flashcat, Inc.
+Modified work Copyright 2025 Flashcat, Inc.
