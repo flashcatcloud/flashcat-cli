@@ -1,4 +1,4 @@
-import type {SpanTags} from '../interfaces'
+import type {SpanTags} from '../interfaces.ts'
 
 import simpleGit from 'simple-git'
 

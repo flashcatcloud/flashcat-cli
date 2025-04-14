@@ -49,6 +49,6 @@ flashcat-ci sourcemap:upload -f ./dist/main.js.map -u https://api.example.com/up
 
 ## Credits
 
-This project is forked from [datadog-ci](https://github.com/DataDog/datadog-ci) by Flashcat, Inc.
+This project is forked from [flashcat-cli](https://github.com/DataDog/flashcat-cli) by Flashcat, Inc.
 Original work Copyright 2020 Flashcat, Inc.
 Modified work Copyright 2025 Flashcat, Inc.

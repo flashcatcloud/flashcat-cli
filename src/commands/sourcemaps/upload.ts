@@ -5,16 +5,12 @@ import chalk from 'chalk'
 import {Command, Option} from 'clipanion'
 import {glob} from 'glob'
 
-import {FIPS_ENV_VAR, FIPS_IGNORE_ERROR_ENV_VAR} from '../../constants'
 import {ApiKeyValidator, newApiKeyValidator} from '../../helpers/apikey'
 import {getBaseSourcemapIntakeUrl} from '../../helpers/base-intake-url'
 import {doWithMaxConcurrency} from '../../helpers/concurrency'
-import {toBoolean} from '../../helpers/env'
 import {InvalidConfigurationError} from '../../helpers/errors'
-import {enableFips} from '../../helpers/fips'
 import {RepositoryData, getRepositoryData, newSimpleGit} from '../../helpers/git/format-git-sourcemaps-data'
 import {RequestBuilder} from '../../helpers/interfaces'
-import {MetricsLogger, getMetricsLogger} from '../../helpers/metrics'
 import {UploadStatus, upload} from '../../helpers/upload'
 import {buildPath, getRequestBuilder} from '../../helpers/utils'
 import * as validation from '../../helpers/validation'
@@ -49,11 +45,11 @@ export class UploadCommand extends Command {
     examples: [
       [
         'Upload all sourcemaps in current directory',
-        'datadog-ci sourcemaps upload . --service my-service --minified-path-prefix https://static.datadog.com --release-version 1.234',
+        'flashcat-cli sourcemaps upload . --service my-service --minified-path-prefix https://static.flashcat.com --release-version 1.234',
       ],
       [
         'Upload all sourcemaps in /home/users/ci with 50 concurrent uploads',
-        'datadog-ci sourcemaps upload /home/users/ci --service my-service --minified-path-prefix https://static.datadog.com --release-version 1.234 --max-concurrency 50',
+        'flashcat-cli sourcemaps upload /home/users/ci --service my-service --minified-path-prefix https://static.flashcat.com --release-version 1.234 --max-concurrency 50',
       ],
     ],
   })
@@ -71,18 +67,12 @@ export class UploadCommand extends Command {
 
   private cliVersion = version
 
-  private fips = Option.Boolean('--fips', false)
-  private fipsIgnoreError = Option.Boolean('--fips-ignore-error', false)
-
   private config = {
-    apiKey: process.env.DATADOG_API_KEY,
-    flashcatSite: process.env.DATADOG_SITE || 'datadoghq.com',
-    fips: toBoolean(process.env[FIPS_ENV_VAR]) ?? false,
-    fipsIgnoreError: toBoolean(process.env[FIPS_IGNORE_ERROR_ENV_VAR]) ?? false,
+    apiKey: process.env.FLASHCAT_API_KEY,
+    flashcatSite: process.env.FLASHCAT_SITE || 'flashcat.cloud', // fixme 默认值需要再确认
   }
 
   public async execute() {
-    enableFips(this.fips || this.config.fips, this.fipsIgnoreError || this.config.fipsIgnoreError) // fips 是干啥的？
 
     if (!this.releaseVersion) {
       this.context.stderr.write('Missing release version\n')
@@ -122,26 +112,20 @@ export class UploadCommand extends Command {
         this.dryRun
       )
     )
-    const metricsLogger = getMetricsLogger({
-      flashcatSite: process.env.DATADOG_SITE,
-      defaultTags: [`version:${this.releaseVersion}`, `service:${this.service}`, `cli_version:${this.cliVersion}`],
-      prefix: 'datadog.ci.sourcemaps.',
-    })
+    // metricsLogger 先去掉，用户如果上传失败或者成功，如何打log？
     const apiKeyValidator = newApiKeyValidator({
       apiKey: this.config.apiKey,
       flashcatSite: this.config.flashcatSite,
-      metricsLogger: metricsLogger.logger,
     })
     const useGit = this.disableGit === undefined || !this.disableGit
     const initialTime = Date.now()
     const payloads = await this.getPayloadsToUpload(useGit)
     const requestBuilder = this.getRequestBuilder()
-    const uploadMultipart = this.upload(requestBuilder, metricsLogger, apiKeyValidator)
+    const uploadMultipart = this.upload(requestBuilder, apiKeyValidator)
     try {
       const results = await doWithMaxConcurrency(this.maxConcurrency, payloads, uploadMultipart)
       const totalTime = (Date.now() - initialTime) / 1000
       this.context.stdout.write(renderSuccessfulCommand(results, totalTime, this.dryRun))
-      metricsLogger.logger.gauge('duration', totalTime)
 
       return 0
     } catch (error) {
@@ -152,13 +136,7 @@ export class UploadCommand extends Command {
       }
       // Otherwise unknown error, let's propagate the exception
       throw error
-    } finally {
-      try {
-        await metricsLogger.flush()
-      } catch (err) {
-        this.context.stdout.write(`WARN: ${err}\n`)
-      }
-    }
+    } 
   }
 
   // Fills the 'repository' field of each payload with data gathered using git.
@@ -176,7 +154,7 @@ export class UploadCommand extends Command {
         })
       )
     } catch (e) {
-      this.context.stdout.write(renderGitWarning(e))
+      this.context.stdout.write(renderGitWarning(e as string))
     }
   }
 
@@ -237,7 +215,7 @@ export class UploadCommand extends Command {
       }
 
       return repositoryPayload
-    } catch (error) {
+    } catch (error:any) {
       this.context.stdout.write(renderGitDataNotAttachedWarning(sourcemapPath, error.message))
 
       return undefined
@@ -246,14 +224,14 @@ export class UploadCommand extends Command {
 
   private getRequestBuilder(): RequestBuilder {
     if (!this.config.apiKey) {
-      throw new InvalidConfigurationError(`Missing ${chalk.bold('DATADOG_API_KEY')} in your environment.`)
+      throw new InvalidConfigurationError(`Missing ${chalk.bold('FLASHCAT_API_KEY')} in your environment.`)
     }
 
     return getRequestBuilder({
       apiKey: this.config.apiKey,
       baseUrl: getBaseSourcemapIntakeUrl(this.config.flashcatSite),
       headers: new Map([
-        ['DD-EVP-ORIGIN', 'datadog-ci_sourcemaps'],
+        ['DD-EVP-ORIGIN', 'flashcat-cli_sourcemaps'],
         ['DD-EVP-ORIGIN-VERSION', this.cliVersion],
       ]),
       overrideUrl: 'api/v2/srcmap',
@@ -278,16 +256,14 @@ export class UploadCommand extends Command {
 
   private upload(
     requestBuilder: RequestBuilder,
-    metricsLogger: MetricsLogger,
     apiKeyValidator: ApiKeyValidator
   ): (sourcemap: Sourcemap) => Promise<UploadStatus> {
     return async (sourcemap: Sourcemap) => {
       try {
         validatePayload(sourcemap, this.context.stdout)
-      } catch (error) {
+      } catch (error:any) {
         if (error instanceof InvalidPayload) {
           this.context.stdout.write(renderFailedUpload(sourcemap, error.message))
-          metricsLogger.logger.increment('skipped_sourcemap', 1, [`reason:${error.reason}`])
         } else {
           this.context.stdout.write(
             renderFailedUpload(
@@ -295,7 +271,6 @@ export class UploadCommand extends Command {
               `Skipping sourcemap ${sourcemap.sourcemapPath} because of error: ${error.message}`
             )
           )
-          metricsLogger.logger.increment('skipped_sourcemap', 1, ['reason:unknown'])
         }
 
         return UploadStatus.Skipped
@@ -317,11 +292,9 @@ export class UploadCommand extends Command {
         apiKeyValidator,
         onError: (e) => {
           this.context.stdout.write(renderFailedUpload(sourcemap, e.message))
-          metricsLogger.logger.increment('failed', 1)
         },
         onRetry: (e, attempts) => {
           this.context.stdout.write(renderRetriedUpload(sourcemap, e.message, attempts))
-          metricsLogger.logger.increment('retries', 1)
         },
         onUpload: () => {
           if (this.quiet) {

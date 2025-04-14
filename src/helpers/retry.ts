@@ -10,7 +10,7 @@ export const retryRequest = async <T>(
   const doRequest = async (bail: (e: Error) => void, attempt: number) => {
     try {
       return await requestPerformer(bail, attempt)
-    } catch (error) {
+    } catch (error: any) {
       if (error.response && errorCodesNoRetry.includes(error.response.status)) {
         // If it's an axios error with a status code that is excluded from retries, we bail to avoid retrying
         bail(error)

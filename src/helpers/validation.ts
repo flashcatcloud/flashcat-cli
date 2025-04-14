@@ -2,7 +2,7 @@ import fs from 'fs'
 
 import * as t from 'typanion'
 
-import {DATADOG_SITES} from '../constants'
+import {FLASHCAT_SITES} from '../constants'
 
 export const checkFile: (path: string) => {empty: boolean; exists: boolean} = (path: string) => {
   try {
@@ -35,7 +35,7 @@ export const isValidflashcatSite = (site?: string): boolean => {
     return false
   }
 
-  return !!process.env.DD_CI_BYPASS_SITE_VALIDATION || DATADOG_SITES.includes(site.toLowerCase())
+  return !!process.env.DD_CI_BYPASS_SITE_VALIDATION || FLASHCAT_SITES.includes(site.toLowerCase())
 }
 
 const renderDuplicateAPIKey = (environmentAPIKey: string) => {

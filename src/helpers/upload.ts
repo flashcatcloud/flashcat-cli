@@ -77,7 +77,7 @@ export const upload = (requestBuilder: RequestBuilder) => async (
     })
 
     return UploadStatus.Success
-  } catch (error) {
+  } catch (error: any) {
     if (opts.apiKeyValidator) {
       // Raise an exception in case of invalid API key
       await opts.apiKeyValidator.verifyApiKey(error)

@@ -4,11 +4,9 @@ import {Builtins, CommandClass} from 'clipanion'
 process.env.DD_BETA_COMMANDS_ENABLED = '1'
 
 import {cli, BETA_COMMANDS} from '../cli'
-import {enableFips} from '../helpers/fips'
 
 const builtins: CommandClass[] = [Builtins.HelpCommand, Builtins.VersionCommand]
 
-jest.mock('../helpers/fips')
 
 describe('cli', () => {
   const commands = Array.from(cli['registrations'].keys())
@@ -48,51 +46,6 @@ describe('cli', () => {
       // Please uppercase the first letter of the category and description.
       expect(command.usage?.category?.charAt(0)).toStrictEqual(command.usage?.category?.charAt(0).toUpperCase())
       expect(command.usage?.description?.charAt(0)).toStrictEqual(command.usage?.description?.charAt(0).toUpperCase())
-    })
-  })
-
-  describe('fips', () => {
-    const mockedEnableFips = enableFips as jest.MockedFunction<typeof enableFips>
-    mockedEnableFips.mockImplementation(() => true)
-
-    // Without the required options, the commands are not executed at all
-    const requiredOptions: Record<string, string[]> = {
-      'coverage upload': ['.', '--dry-run'],
-      'dora deployment': ['--started-at', '0', '--dry-run'],
-      'dsyms upload': ['.', '--dry-run'],
-      'elf-symbols upload': ['non-existing-file', '--dry-run'],
-      'pe-symbols upload': ['non-existing-file', '--dry-run'],
-      'gate evaluate': ['--no-wait', '--dry-run'],
-      'junit upload': ['.', '--dry-run'],
-      'sarif upload': ['.', '--dry-run'],
-      'sbom upload': ['.'],
-      'sourcemaps upload': ['.', '--dry-run'],
-      trace: ['id', '--dry-run'],
-    }
-
-    // version doesn't support --fips option
-    const fipsCases = cases.filter(([commandName]) => !['version'].includes(commandName))
-
-    describe.each(fipsCases)('%s %s', (_commandName, _subcommandName, commandPath) => {
-      const command = [...commandPath, ...(requiredOptions[commandPath.join(' ')] ?? [])]
-
-      test('supports the --fips option', async () => {
-        // When running the command with the --fips option
-        const exitCode = await cli.run([...command, '--fips'])
-
-        // The command calls the enableFips function with the right parameters
-        expect([0, 1]).toContain(exitCode)
-        expect(mockedEnableFips).toHaveBeenCalledWith(true, false)
-      })
-
-      test('supports the --fips-ignore-error option', async () => {
-        // When running the command with the --fips and --fips-ignore-error options
-        const exitCode = await cli.run([...command, '--fips', '--fips-ignore-error'])
-
-        // The command calls the enableFips function with the right parameters
-        expect([0, 1]).toContain(exitCode)
-        expect(mockedEnableFips).toHaveBeenCalledWith(true, true)
-      })
     })
   })
 })

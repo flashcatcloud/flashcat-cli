@@ -1,6 +1,5 @@
 import {AxiosError, default as axios} from 'axios'
 import chalk from 'chalk'
-import {BufferedMetricsLogger} from 'datadog-metrics'
 
 import {InvalidConfigurationError} from './errors'
 
@@ -14,11 +13,10 @@ export interface ApiKeyValidator {
 export interface ApiKeyValidatorParams {
   apiKey: string | undefined
   flashcatSite: string
-  metricsLogger?: BufferedMetricsLogger
 }
 
 export const newApiKeyValidator = (params: ApiKeyValidatorParams): ApiKeyValidator =>
-  new ApiKeyValidatorImplem(params.apiKey, params.flashcatSite, params.metricsLogger)
+  new ApiKeyValidatorImplem(params.apiKey, params.flashcatSite)
 
 /** ApiKeyValidator is an helper class to interpret Flashcat error responses and possibly check the
  * validity of the api key.
@@ -28,12 +26,10 @@ class ApiKeyValidatorImplem {
   public flashcatSite: string
 
   private isValid?: boolean
-  private metricsLogger?: BufferedMetricsLogger
 
-  constructor(apiKey: string | undefined, flashcatSite: string, metricsLogger?: BufferedMetricsLogger) {
+  constructor(apiKey: string | undefined, flashcatSite: string) {
     this.apiKey = apiKey
     this.flashcatSite = flashcatSite
-    this.metricsLogger = metricsLogger
   }
 
   /** Check if an API key is valid, based on the Axios error and defaulting to verify the API key
@@ -46,11 +42,8 @@ class ApiKeyValidatorImplem {
       return
     }
     if (error.response.status === 403 || (error.response.status === 400 && !(await this.isApiKeyValid()))) {
-      if (this.metricsLogger !== undefined) {
-        this.metricsLogger.increment('invalid_auth', 1)
-      }
       throw new InvalidConfigurationError(
-        `${chalk.red.bold('DATADOG_API_KEY')} does not contain a valid API key for Flashcat site ${this.flashcatSite}`
+        `${chalk.red.bold('FLASHCAT_API_KEY')} does not contain a valid API key for Flashcat site ${this.flashcatSite}`
       )
     }
   }
@@ -60,11 +53,13 @@ class ApiKeyValidatorImplem {
   }
 
   private async isApiKeyValid(): Promise<boolean | undefined> {
-    if (this.isValid === undefined) {
-      this.isValid = await this.validateApiKey()
-    }
+    return true
+    // fixme later 先跳过验证，后面再补充
+    // if (this.isValid === undefined) {
+    //   this.isValid = await this.validateApiKey()
+    // }
 
-    return this.isValid
+    // return this.isValid
   }
 
   private async validateApiKey(): Promise<boolean> {

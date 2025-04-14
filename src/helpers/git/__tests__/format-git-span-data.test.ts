@@ -67,7 +67,7 @@ describe('getGitMetadata', () => {
     ;(simpleGit as jest.Mock).mockImplementation(() => ({
       branch: () => ({current: 'main'}),
       listRemote: async (git: any): Promise<string> =>
-        'https://x-oauth-basic:ghp_safe_characters@github.com/datadog/safe-repository.git',
+        'https://x-oauth-basic:ghp_safe_characters@github.com/flashcat/safe-repository.git',
       revparse: () => 'commitSHA',
       show: (input: string[]) => {
         if (input[1] === '--format=%s') {
@@ -79,7 +79,7 @@ describe('getGitMetadata', () => {
     }))
     const result = await getGitMetadata()
     expect(result).toEqual({
-      [GIT_REPOSITORY_URL]: 'https://github.com/datadog/safe-repository.git',
+      [GIT_REPOSITORY_URL]: 'https://github.com/flashcat/safe-repository.git',
       [GIT_BRANCH]: 'main',
       [GIT_SHA]: 'commitSHA',
       [GIT_COMMIT_MESSAGE]: 'commit message',

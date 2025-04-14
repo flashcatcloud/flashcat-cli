@@ -11,9 +11,9 @@ describe('upload', () => {
     test('should return correct URL', () => {
       const command = new UploadCommand()
       command['basePath'] = '/js/sourcemaps'
-      command['minifiedPathPrefix'] = 'http://datadog.com/js'
+      command['minifiedPathPrefix'] = 'http://flashcat.com/js'
       expect(command['getMinifiedURLAndRelativePath']('/js/sourcemaps/common.min.js.map')).toStrictEqual([
-        'http://datadog.com/js/common.min.js.map',
+        'http://flashcat.com/js/common.min.js.map',
         '/common.min.js.map',
       ])
     })
@@ -23,9 +23,9 @@ describe('upload', () => {
     test('should return correct URL', () => {
       const command = new UploadCommand()
       command['basePath'] = '/js/sourcemaps'
-      command['minifiedPathPrefix'] = '//datadog.com/js'
+      command['minifiedPathPrefix'] = '//flashcat.com/js'
       expect(command['getMinifiedURLAndRelativePath']('/js/sourcemaps/common.min.js.map')).toStrictEqual([
-        '//datadog.com/js/common.min.js.map',
+        '//flashcat.com/js/common.min.js.map',
         '/common.min.js.map',
       ])
     })
@@ -46,7 +46,7 @@ describe('upload', () => {
   describe('isMinifiedPathPrefixValid: full URL', () => {
     test('should return true', () => {
       const command = new UploadCommand()
-      command['minifiedPathPrefix'] = 'http://datadog.com/js'
+      command['minifiedPathPrefix'] = 'http://flashcat.com/js'
 
       expect(command['isMinifiedPathPrefixValid']()).toBe(true)
     })
@@ -55,7 +55,7 @@ describe('upload', () => {
   describe('isMinifiedPathPrefixValid: URL without protocol', () => {
     test('should return true', () => {
       const command = new UploadCommand()
-      command['minifiedPathPrefix'] = '//datadog.com/js'
+      command['minifiedPathPrefix'] = '//flashcat.com/js'
 
       expect(command['isMinifiedPathPrefixValid']()).toBe(true)
     })
@@ -94,7 +94,7 @@ describe('upload', () => {
       const command = new UploadCommand()
 
       expect(command['getRequestBuilder'].bind(command)).toThrow(
-        `Missing ${chalk.bold('DATADOG_API_KEY')} in your environment.`
+        `Missing ${chalk.bold('FLASHCAT_API_KEY')} in your environment.`
       )
     })
   })
@@ -113,7 +113,7 @@ describe('upload', () => {
           ''
         )
       )
-      // The command will fetch git metadatas for the current datadog-ci repository.
+      // The command will fetch git metadatas for the current flashcat-cli repository.
       // The `empty.min.js.map` contains no files, therefore no file payload should be set.
       await command['addRepositoryDataToPayloads'](sourcemaps)
       expect(sourcemaps[0].gitData).toBeDefined()
@@ -135,7 +135,7 @@ describe('upload', () => {
           ''
         )
       )
-      // The command will fetch git metadatas for the current datadog-ci repository.
+      // The command will fetch git metadatas for the current flashcat-cli repository.
       // The `common.min.js.map` contains the "git.test.ts" filename which matches a tracked filename,
       // therefore a file payload should be set.
       // Removing the "git.test.ts" file will break this test.
@@ -152,7 +152,7 @@ describe('execute', () => {
   const runCLI = async (path: string) => {
     const cli = makeCli()
     const context = createMockContext() as any
-    process.env = {DATADOG_API_KEY: 'PLACEHOLDER'}
+    process.env = {FLASHCAT_API_KEY: 'PLACEHOLDER'}
     const code = await cli.run(
       [
         'sourcemaps',

@@ -800,7 +800,7 @@ export const getCIEnv = (): {ciEnv: Record<string, string>; provider: string} =>
 
   if (process.env.TEAMCITY_VERSION) {
     return {
-      ciEnv: filterEnv(['DATADOG_BUILD_ID']),
+      ciEnv: filterEnv(['FLASHCAT_BUILD_ID']),
       provider: 'teamcity',
     }
   }

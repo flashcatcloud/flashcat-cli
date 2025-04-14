@@ -2,7 +2,7 @@ import {exec} from 'child_process'
 import fs, {existsSync, lstatSync, readFileSync} from 'fs'
 import {promisify} from 'util'
 
-import type {SpanTag, SpanTags} from './interfaces'
+import type {SpanTag, SpanTags} from './interfaces.ts'
 import type {AxiosRequestConfig} from 'axios'
 
 import axios from 'axios'
@@ -11,7 +11,7 @@ import deepExtend from 'deep-extend'
 import * as glob from 'glob'
 import {ProxyAgent} from 'proxy-agent'
 
-export const DEFAULT_CONFIG_PATHS = ['datadog-ci.json']
+export const DEFAULT_CONFIG_PATHS = ['flashcat-cli.json']
 
 export const pick = <T extends Record<any, any>, K extends keyof T>(base: T, keys: K[]) => {
   const definedKeys = keys.filter((key) => !!base[key])
@@ -210,7 +210,7 @@ const createProxyAgentForUrl = (proxyUrl: string) => {
   }
 
   return new ProxyAgent({
-    getProxyForUrl: (url) => {
+    getProxyForUrl: (url:string) => {
       // Do not proxy the WebSocket connections.
       if (url?.match(/^wss?:/)) {
         return ''
@@ -225,8 +225,8 @@ export const getApiHostForSite = (site: string) => {
   switch (site) {
     case 'datad0g.com':
       return `app.${site}`
-    case 'datadoghq.com':
-    case 'datadoghq.eu':
+    case 'flashcathq.com':
+    case 'flashcathq.eu':
     default:
       return `api.${site}`
   }
