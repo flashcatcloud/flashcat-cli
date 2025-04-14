@@ -119,7 +119,7 @@ export class UploadCommand extends Command {
     })
     const useGit = this.disableGit === undefined || !this.disableGit
     const initialTime = Date.now()
-    const payloads = await this.getPayloadsToUpload(useGit)
+    const payloads = await this.getPayloadsToUpload(useGit) // 怎么把git信息加上的？加在哪里？
     const requestBuilder = this.getRequestBuilder()
     const uploadMultipart = this.upload(requestBuilder, apiKeyValidator)
     try {
@@ -234,7 +234,7 @@ export class UploadCommand extends Command {
         ['DD-EVP-ORIGIN', 'flashcat-cli_sourcemaps'],
         ['DD-EVP-ORIGIN-VERSION', this.cliVersion],
       ]),
-      overrideUrl: 'api/v2/srcmap',
+      overrideUrl: '/sourcemap/upload',
     })
   }
 

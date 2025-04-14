@@ -6,7 +6,7 @@ import chalk from 'chalk'
 import {BaseContext} from 'clipanion'
 
 import {getCISpanTags} from './ci'
-import {DatadogCiConfig} from './config'
+import {FlashcatCiConfig} from './config'
 import {getGitMetadata} from './git/format-git-span-data'
 import {SpanTag, SpanTags} from './interfaces'
 import {getUserGitSpanTags} from './user-provided-git'
@@ -237,7 +237,7 @@ export const getMissingRequiredGitTags = (tags: SpanTags): string[] => {
  * @param includeCiTags - include CI tags or not
  */
 export const getSpanTags = async (
-  config: DatadogCiConfig,
+  config: FlashcatCiConfig,
   additionalTags: string[] | undefined,
   includeCiTags: boolean,
   gitPath?: string

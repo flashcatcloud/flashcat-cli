@@ -5,7 +5,7 @@ A command-line tool for Flashcat CI/CD operations.
 ## Installation
 
 ```bash
-npm install -g flashcat-ci
+npm install -g flashcat-cli
 ```
 
 ## Usage
@@ -13,7 +13,7 @@ npm install -g flashcat-ci
 ### Sourcemap Upload
 
 ```bash
-flashcat-ci sourcemap:upload -f <sourcemap-file> -u <upload-url> [-t <token>]
+flashcat-cli sourcemap:upload -f <sourcemap-file> -u <upload-url> [-t <token>]
 ```
 
 Options:
@@ -23,7 +23,7 @@ Options:
 
 Example:
 ```bash
-flashcat-ci sourcemap:upload -f ./dist/main.js.map -u https://api.example.com/upload -t your-token
+flashcat-cli sourcemap:upload -f ./dist/main.js.map -u https://api.example.com/upload -t your-token
 ```
 
 ## Development
@@ -49,6 +49,6 @@ flashcat-ci sourcemap:upload -f ./dist/main.js.map -u https://api.example.com/up
 
 ## Credits
 
-This project is forked from [flashcat-cli](https://github.com/DataDog/flashcat-cli) by Flashcat, Inc.
+This project is forked from [flashcat-cli](https://github.com/FLASHCAT/flashcat-cli) by Flashcat, Inc.
 Original work Copyright 2020 Flashcat, Inc.
 Modified work Copyright 2025 Flashcat, Inc.

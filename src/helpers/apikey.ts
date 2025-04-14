@@ -49,7 +49,7 @@ class ApiKeyValidatorImplem {
   }
 
   private getApiKeyValidationURL(): string {
-    return `https://api.${this.flashcatSite}/api/v1/validate`
+    return `https://api.${this.flashcatSite}/api/v1/validate` // fixme later 修改一下校验api的url
   }
 
   private async isApiKeyValid(): Promise<boolean | undefined> {
