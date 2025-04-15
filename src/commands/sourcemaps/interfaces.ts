@@ -76,7 +76,7 @@ export class Sourcemap {
       type: 'string',
       options: {
         contentType: 'application/json',
-        filename: 'event',
+        // filename: 'event',
       },
       value: JSON.stringify(metadata),
     }
