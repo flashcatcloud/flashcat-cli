@@ -49,6 +49,6 @@ flashcat-cli sourcemap:upload -f ./dist/main.js.map -u https://api.example.com/u
 
 ## Credits
 
-This project is forked from [flashcat-cli](https://github.com/FLASHCAT/flashcat-cli) by Flashcat, Inc.
-Original work Copyright 2020 Flashcat, Inc.
+This project is inspired by [datadog-ci](https://github.com/DATADOG/datadog-ci) by Datadog, Inc.
+Original work Copyright 2020 Datadog, Inc.
 Modified work Copyright 2025 Flashcat, Inc.

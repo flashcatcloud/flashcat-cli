@@ -49,17 +49,15 @@ class ApiKeyValidatorImplem {
   }
 
   private getApiKeyValidationURL(): string {
-    return `https://api.${this.flashcatSite}/api/v1/validate` // fixme later 修改一下校验api的url
+    return `https://console-beta.${this.flashcatSite}/api/account/api-key/validate`
   }
 
   private async isApiKeyValid(): Promise<boolean | undefined> {
-    return true
-    // fixme later 先跳过验证，后面再补充
-    // if (this.isValid === undefined) {
-    //   this.isValid = await this.validateApiKey()
-    // }
+    if (this.isValid === undefined) {
+      this.isValid = await this.validateApiKey()
+    }
 
-    // return this.isValid
+    return this.isValid
   }
 
   private async validateApiKey(): Promise<boolean> {

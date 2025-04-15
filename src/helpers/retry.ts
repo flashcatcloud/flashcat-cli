@@ -11,6 +11,8 @@ export const retryRequest = async <T>(
     try {
       return await requestPerformer(bail, attempt)
     } catch (error: any) {
+      // console.error(error)  // fixme 如果开启了debug模式，再打印error信息
+      console.error(error.response?.data)
       if (error.response && errorCodesNoRetry.includes(error.response.status)) {
         // If it's an axios error with a status code that is excluded from retries, we bail to avoid retrying
         bail(error)

@@ -42,7 +42,7 @@ export class Sourcemap {
         type: 'string',
         options: {
           contentType: 'application/json',
-          filename: 'repository',
+        //  filename: 'repository', // 如果增加filename server解析会有问题
         },
         value: this.gitData.gitRepositoryPayload,
       })
