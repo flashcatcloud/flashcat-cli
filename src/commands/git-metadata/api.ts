@@ -8,5 +8,5 @@ export const getBaseIntakeUrl = () => {
     return process.env.FLASHCAT_SOURCEMAP_INTAKE_URL
   }
 
-  return 'https://browser.' + flashcatSite
+  return 'https://api.' + flashcatSite
 }

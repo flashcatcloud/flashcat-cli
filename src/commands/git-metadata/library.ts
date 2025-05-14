@@ -49,7 +49,7 @@ export const uploadGitCommitHash = async (
 
   return Promise.all([
     syncGitDB(simpleGit, apiKey, flashcatSite, payload.remote),
-    uploadToSrcmapTrack(apiKey, flashcatSite, payload),
+    // uploadToSrcmapTrack(apiKey, flashcatSite, payload),
   ]).then(() => [payload.remote, payload.hash])
 }
 
@@ -74,7 +74,7 @@ const uploadToSrcmapTrack = async (apiKey: string, flashcatSite: string, payload
   })
   const requestBuilder = getRequestBuilder({
     apiKey,
-    baseUrl: 'https://sourcemap-intake.' + flashcatSite,
+    baseUrl: 'https://api.' + flashcatSite,
     headers: new Map([
       ['DD-EVP-ORIGIN', 'FLASHCAT-ci_sci'],
       ['DD-EVP-ORIGIN-VERSION', version],

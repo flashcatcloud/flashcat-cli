@@ -49,7 +49,7 @@ class ApiKeyValidatorImplem {
   }
 
   private getApiKeyValidationURL(): string {
-    return `https://console-beta.${this.flashcatSite}/api/account/api-key/validate`
+    return `https://api.${this.flashcatSite}/account/api-key/validate`
   }
 
   private async isApiKeyValid(): Promise<boolean | undefined> {

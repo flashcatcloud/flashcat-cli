@@ -69,7 +69,7 @@ export class UploadCommand extends Command {
 
   private config = {
     apiKey: process.env.FLASHCAT_API_KEY,
-    flashcatSite: process.env.FLASHCAT_SITE || 'flashcat.cloud', // fixme 默认值需要再确认
+    flashcatSite: process.env.FLASHCAT_SITE || 'flashcat.cloud', 
   }
 
   public async execute() {
