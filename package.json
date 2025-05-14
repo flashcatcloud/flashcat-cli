@@ -1,6 +1,6 @@
 {
   "name": "@flashcatcloud/flashcat-cli",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "CLI tool for Flashcat Cloud",
   "main": "dist/index.js",
   "bin": {
