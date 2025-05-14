@@ -1,47 +1,31 @@
 # Flashcat CI
 
-A command-line tool for Flashcat CI/CD operations.
+A command-line tool for supporting Flashcat-related operations.
+See the  [documentation](https://docs.flashcat.cloud/zh/flashduty/introduction) documentation for more details.
 
 ## Installation
 
 ```bash
-npm install -g flashcat-ci
+npm install -g @flashcatcloud/flashcat-cli
 ```
+
 
 ## Usage
 
 ### Sourcemap Upload
 
 ```bash
-flashcat-ci sourcemap:upload -f <sourcemap-file> -u <upload-url> [-t <token>]
+flashcat-cli sourcemaps upload ./build --service <service> --minified-path-prefix <minified-path>
 ```
 
-Options:
-- `-f, --file`: Path to the sourcemap file (required)
-- `-u, --url`: Upload URL (required)
-- `-t, --token`: Authentication token (optional)
-
-Example:
-```bash
-flashcat-ci sourcemap:upload -f ./dist/main.js.map -u https://api.example.com/upload -t your-token
-```
-
-## Development
-
-1. Clone the repository
-2. Install dependencies:
-   ```bash
-   npm install
-   ```
-3. Build the project:
-   ```bash
-   npm run build
-   ```
-4. Run in development mode:
-   ```bash
-   npm run dev
-   ```
+Option descriptions:
+- `--service` (required): Service name
+- `--minified-path-prefix` (required): The common prefix for all JS source files, depending on their deployed URL. It can be a complete URL or an absolute path.
 
 ## License
+[Apache License, v2.0](./LICENSE)
 
-MIT 
+## Credits
+This project is inspired by  [datadog-ci](https://github.com/DATADOG/datadog-ci) and initialized from Datadog, Inc.
+The original work is copyright Datadog, Inc., 2020.
+Modifications copyright Flashcat, Inc., 2025.

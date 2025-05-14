@@ -1,10 +1,10 @@
 {
-  "name": "flashcat-ci",
-  "version": "1.0.0",
-  "description": "CLI tool for Flashcat CI/CD operations",
+  "name": "@flashcatcloud/flashcat-cli",
+  "version": "0.0.1",
+  "description": "CLI tool for Flashcat Cloud",
   "main": "dist/index.js",
   "bin": {
-    "flashcat-ci": "./dist/cli.js"
+    "flashcat-cli": "./dist/cli.js"
   },
   "engines": {
     "node": ">=18"
@@ -14,6 +14,20 @@
     "README.md",
     "LICENSE"
   ],
+  "resolutions": {
+    "ini": "1.3.8"
+  },
+  "pkg": {
+    "scripts": [
+      "dist/commands/*/*.js"
+    ],
+    "assets": [
+      "node_modules/axios/dist/node/axios.cjs"
+    ]
+  },
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "build": "yarn clean && tsc",
     "clean": "rm -rf dist/*",
@@ -21,7 +35,7 @@
     "launch": "ts-node --transpile-only src/cli.ts",
     "launch:debug": "node -r ts-node/register/transpile-only --inspect-brk src/cli.ts",
     "lint": "yarn eslint",
-    "prepack": "yarn build && rimraf 'dist/**/__tests__'",
+    "prepack": "yarn build && node ./bin/make-it-executable.js && rimraf 'dist/**/__tests__'",
     "test": "jest --colors",
     "test:debug": "node --inspect-brk node_modules/jest/bin/jest --runInBand",
     "eslint": "eslint --quiet 'src/**/*.ts'",
@@ -33,26 +47,35 @@
     "cli",
     "upload"
   ],
-  "author": "",
-  "license": "MIT",
+  "author": "Flashcat Cloud",
+  "license": "Apache-2.0",
   "dependencies": {
+    "async-retry": "1.3.1",
     "axios": "^1.8.4",
     "chalk": "3.0.0",
     "clipanion": "^3.2.1",
+    "deep-extend": "^0.6.0",
     "form-data": "^4.0.0",
     "glob": "^10.4.5",
     "inquirer": "^8.2.5",
     "js-yaml": "3.13.1",
+    "jszip": "^3.10.1",
     "ora": "5.4.1",
+    "proxy-agent": "^6.4.0",
     "semver": "^7.5.3",
     "simple-git": "3.16.0",
     "terminal-link": "2.1.1",
+    "tiny-async-pool": "^2.1.0",
     "typanion": "^3.14.0"
   },
   "devDependencies": {
+    "@types/async-retry": "1.4.8",
+    "@types/deep-extend": "0.4.31",
+    "@types/inquirer": "8.2.6",
     "@types/jest": "^29.5.11",
     "@types/js-yaml": "^4.0.9",
     "@types/node": "^20.11.0",
+    "@types/tiny-async-pool": "^2.0.3",
     "@typescript-eslint/eslint-plugin": "^5.62.0",
     "@typescript-eslint/parser": "^5.62.0",
     "eslint": "^7.32.0",
@@ -61,6 +84,7 @@
     "eslint-plugin-jest": "^27.2.3",
     "eslint-plugin-prettier": "4.0.0",
     "jest": "^29.7.0",
+    "pkg": "^5.8.1",
     "prettier": "2.0.5",
     "rimraf": "^5.0.0",
     "ts-jest": "29.1.1",
