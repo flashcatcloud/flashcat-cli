@@ -1,0 +1,64 @@
+import fs from "fs/promises";
+import { tmpdir } from "os";
+import path from "path";
+
+import { buildPath, execute } from "../../helpers/utils";
+
+export const isZipFile = async (filepath: string) => {
+  try {
+    const stats = await fs.stat(filepath);
+
+    return stats.size !== 0 && path.extname(filepath) === ".zip";
+  } catch (error) {
+    return false;
+  }
+};
+
+export const createUniqueTmpDirectory = async (): Promise<string> => {
+  const uniqueValue = Math.random() * Number.MAX_SAFE_INTEGER;
+  const directoryPath = buildPath(tmpdir(), uniqueValue.toString());
+  await fs.mkdir(directoryPath, { recursive: true });
+
+  return directoryPath;
+};
+
+export const deleteDirectory = async (directoryPath: string): Promise<void> => {
+  await fs.rm(directoryPath, { recursive: true });
+};
+
+export const zipDirectoryToArchive = async (
+  directoryPath: string,
+  archivePath: string
+) => {
+  const cwd = path.dirname(directoryPath);
+  const directoryName = path.basename(directoryPath);
+  await execute(`zip -r '${archivePath}' '${directoryName}'`, cwd);
+};
+
+export const unzipArchiveToDirectory = async (
+  archivePath: string,
+  directoryPath: string
+) => {
+  await fs.mkdir(directoryPath, { recursive: true });
+  await execute(`unzip -o '${archivePath}' -d '${directoryPath}'`);
+};
+
+export const executeDwarfdump = async (
+  dSYMPath: string
+): Promise<{ stderr: string; stdout: string }> =>
+  execute(`dwarfdump --uuid '${dSYMPath}'`);
+
+export const executeLipo = async (
+  objectPath: string,
+  arch: string,
+  newObjectPath: string
+): Promise<{ stderr: string; stdout: string }> =>
+  execute(`lipo '${objectPath}' -thin ${arch} -output '${newObjectPath}'`);
+
+export const pluralize = (nb: number, singular: string, plural: string) => {
+  if (nb >= 2) {
+    return `${nb} ${plural}`;
+  }
+
+  return `${nb} ${singular}`;
+};
