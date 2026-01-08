@@ -1,35 +1,35 @@
-import {AxiosError, default as axios} from 'axios'
-import chalk from 'chalk'
+import { AxiosError, default as axios } from "axios";
+import chalk from "chalk";
 
-import {InvalidConfigurationError} from './errors'
+import { InvalidConfigurationError } from "./errors";
 
 /** ApiKeyValidator is an helper interface to interpret Flashcat error responses and possibly check the
  * validity of the api key.
  */
 export interface ApiKeyValidator {
-  verifyApiKey(error: AxiosError): Promise<void>
+  verifyApiKey(error: AxiosError): Promise<void>;
 }
 
 export interface ApiKeyValidatorParams {
-  apiKey: string | undefined
-  flashcatSite: string
+  apiKey: string | undefined;
+  flashcatSite: string;
 }
 
-export const newApiKeyValidator = (params: ApiKeyValidatorParams): ApiKeyValidator =>
-  new ApiKeyValidatorImplem(params.apiKey, params.flashcatSite)
+export const newApiKeyValidator = (
+  params: ApiKeyValidatorParams
+): ApiKeyValidator =>
+  new ApiKeyValidatorImplem(params.apiKey, params.flashcatSite);
 
 /** ApiKeyValidator is an helper class to interpret Flashcat error responses and possibly check the
  * validity of the api key.
  */
 class ApiKeyValidatorImplem {
-  public apiKey: string | undefined
-  public flashcatSite: string
-
-  private isValid?: boolean
+  public apiKey: string | undefined;
+  public flashcatSite: string;
 
   constructor(apiKey: string | undefined, flashcatSite: string) {
-    this.apiKey = apiKey
-    this.flashcatSite = flashcatSite
+    this.apiKey = apiKey;
+    this.flashcatSite = flashcatSite;
   }
 
   /** Check if an API key is valid, based on the Axios error and defaulting to verify the API key
@@ -39,41 +39,16 @@ class ApiKeyValidatorImplem {
    */
   public async verifyApiKey(error: AxiosError): Promise<void> {
     if (error.response === undefined) {
-      return
+      return;
     }
-    if (error.response.status === 403 || (error.response.status === 400 && !(await this.isApiKeyValid()))) {
+    if (error.response.status === 403 || error.response.status === 400) {
       throw new InvalidConfigurationError(
-        `${chalk.red.bold('FLASHCAT_API_KEY')} does not contain a valid API key for Flashcat site ${this.flashcatSite}`
-      )
-    }
-  }
-
-  private getApiKeyValidationURL(): string {
-    return `https://api.${this.flashcatSite}/account/api-key/validate`
-  }
-
-  private async isApiKeyValid(): Promise<boolean | undefined> {
-    if (this.isValid === undefined) {
-      this.isValid = await this.validateApiKey()
-    }
-
-    return this.isValid
-  }
-
-  private async validateApiKey(): Promise<boolean> {
-    try {
-      const response = await axios.get(this.getApiKeyValidationURL(), {
-        headers: {
-          'DD-API-KEY': this.apiKey,
-        },
-      })
-
-      return response.data.valid
-    } catch (error) {
-      if (error instanceof AxiosError && error.response && error.response.status === 403) {
-        return false
-      }
-      throw error
+        `${chalk.red.bold(
+          "FLASHCAT_API_KEY"
+        )} does not contain a valid API key for Flashcat site ${
+          this.flashcatSite
+        }`
+      );
     }
   }
 }
