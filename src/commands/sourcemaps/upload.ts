@@ -55,7 +55,7 @@ export class UploadCommand extends Command {
   })
 
   private basePath = Option.String({required: true})
-  private disableGit = Option.Boolean('--disable-git')
+  private enableGit = Option.Boolean('--enable-git')
   private quiet = Option.Boolean('--quiet', false)
   private dryRun = Option.Boolean('--dry-run', false)
   private maxConcurrency = Option.String('--max-concurrency', '20', {validator: validation.isInteger()})
@@ -117,7 +117,7 @@ export class UploadCommand extends Command {
       apiKey: this.config.apiKey,
       flashcatSite: this.config.flashcatSite,
     })
-    const useGit = this.disableGit === undefined || !this.disableGit
+    const useGit = this.enableGit === true
     const initialTime = Date.now()
     const payloads = await this.getPayloadsToUpload(useGit) // 怎么把git信息加上的？加在哪里？
     const requestBuilder = this.getRequestBuilder()

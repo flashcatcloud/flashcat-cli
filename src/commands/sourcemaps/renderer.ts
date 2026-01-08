@@ -8,8 +8,7 @@ import {Sourcemap} from './interfaces'
 
 export const renderGitWarning = (errorMessage: string) =>
   chalk.yellow(`${ICONS.WARNING} An error occured while invoking git: ${errorMessage}
-Make sure the command is running within your git repository to fully leverage Flashcat's git integration.
-To ignore this warning use the --disable-git flag.\n`)
+Make sure the command is running within your git repository to fully leverage Flashcat's git integration.\n`)
 
 export const renderGitDataNotAttachedWarning = (sourcemap: string, errorMessage: string) =>
   chalk.yellow(`${ICONS.WARNING} Could not attach git data for sourcemap ${sourcemap}: ${errorMessage}\n`)
