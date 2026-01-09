@@ -1,0 +1,100 @@
+name: Publish to NPM
+
+on:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref }}
+          fetch-depth: 0
+
+      - name: Verify tag is on publish branch
+        run: |
+          TAG_COMMIT=$(git rev-list -n 1 ${{ github.ref_name }})
+          if git branch -r --contains $TAG_COMMIT | grep -q 'origin/publish'; then
+            echo "✅ Tag ${{ github.ref_name }} is on publish branch"
+          else
+            echo "❌ Tag ${{ github.ref_name }} is NOT on publish branch"
+            echo "Tags must be created on the publish branch to trigger npm publish"
+            exit 1
+          fi
+
+      - name: Verify tag version matches package.json
+        run: |
+          TAG_VERSION="${{ github.ref_name }}"
+          TAG_VERSION="${TAG_VERSION#v}"
+          PKG_VERSION=$(node -p "require('./package.json').version")
+          if [ "$TAG_VERSION" = "$PKG_VERSION" ]; then
+            echo "✅ Tag version ($TAG_VERSION) matches package.json version ($PKG_VERSION)"
+          else
+            echo "❌ Version mismatch: tag=$TAG_VERSION, package.json=$PKG_VERSION"
+            exit 1
+          fi
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+          registry-url: "https://registry.npmjs.org/"
+
+      - name: Install dependencies
+        run: yarn
+
+      - name: Run tests
+        run: yarn test
+
+      - name: Publish to NPM
+        run: npm publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+  notify-success:
+    needs: publish
+    runs-on: ubuntu-latest
+    if: success()
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Notify deployment success
+        uses: zcong1993/actions-ding@master
+        with:
+          dingToken: ${{ secrets.DING_TALK_TOKEN }}
+          secret: ${{ secrets.DING_TALK_SECRET }}
+          body: |
+            {
+              "msgtype": "markdown",
+              "markdown": {
+                "title": "flashcat-cli 发布通知",
+                "text": "### ✅ flashcat-cli 发布成功\n\n---\n\n 🔖 版本: ${{ github.ref_name }}\n\n 📦 包名: @flashcatcloud/flashcat-cli\n\n 👨‍💻 发布者: ${{ github.actor }}\n\n 🚀 [查看详情](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})"
+              }
+            }
+
+  notify-failure:
+    needs: publish
+    runs-on: ubuntu-latest
+    if: failure()
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Notify deployment failure
+        uses: zcong1993/actions-ding@master
+        with:
+          dingToken: ${{ secrets.DING_TALK_TOKEN }}
+          secret: ${{ secrets.DING_TALK_SECRET }}
+          body: |
+            {
+              "msgtype": "markdown",
+              "markdown": {
+                "title": "flashcat-cli 发布通知",
+                "text": "### ❌ flashcat-cli 发布失败\n\n---\n\n 🔖 版本: ${{ github.ref_name }}\n\n 📦 包名: @flashcatcloud/flashcat-cli\n\n 👨‍💻 发布者: ${{ github.actor }}\n\n 🚀 [查看详情](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})"
+              }
+            }
