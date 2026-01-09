@@ -34,6 +34,10 @@ describe('gitdb', () => {
 
   afterEach(() => {
     jest.spyOn(fspromises, 'mkdtemp').mockRestore()
+    // Restore execSync and axios.create spies to avoid call accumulation between tests
+    // Note: Don't use jest.restoreAllMocks() here as it would also restore Math.random mock
+    jest.spyOn(child_process, 'execSync').mockRestore()
+    jest.spyOn(axios, 'create').mockRestore()
   })
 
   afterAll(() => {
