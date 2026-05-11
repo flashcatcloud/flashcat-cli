@@ -1,3 +1,4 @@
 import {UploadCommand} from './upload'
+import {UploadMiniprogramCommand} from './miniprogram'
 
-module.exports = [UploadCommand]
+module.exports = [UploadCommand, UploadMiniprogramCommand]
