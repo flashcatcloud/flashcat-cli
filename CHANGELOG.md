@@ -16,6 +16,10 @@
 
 ---
 
+## v0.1.1
+
+- ✨ Add WeChat miniprogram sourcemap zip upload command
+
 ## v0.1.0
 
 - ✨ Add sourcemaps upload command
