@@ -39,8 +39,6 @@ describe('UploadMiniprogramCommand', () => {
       '1.2.3',
       '--sourcemap-zip',
       zipPath,
-      '--appid',
-      'wxbad3e0a65782821c',
     ])
 
     expect(code).toBe(0)
@@ -57,7 +55,6 @@ describe('UploadMiniprogramCommand', () => {
       type: 'miniprogram_sourcemap',
       service: 'my-mp',
       version: '1.2.3',
-      appid: 'wxbad3e0a65782821c',
       cli_version: version,
     })
     expect(archive).toEqual({
@@ -71,7 +68,7 @@ describe('UploadMiniprogramCommand', () => {
     })
   })
 
-  test('omits appid from event metadata when not provided', async () => {
+  test('does not support appid as an upload parameter', async () => {
     const zipPath = createZipFixture()
     const uploadImplementation = jest.fn().mockResolvedValue(UploadStatus.Success)
     mockedUpload.mockReturnValue(uploadImplementation)
@@ -85,23 +82,12 @@ describe('UploadMiniprogramCommand', () => {
       '1.2.3',
       '--sourcemap-zip',
       zipPath,
+      '--appid',
+      'wxbad3e0a65782821c',
     ])
 
-    expect(code).toBe(0)
-    const [payload] = uploadImplementation.mock.calls[0]
-    const event = payload.content.get('event')
-
-    expect(event?.type).toBe('string')
-    if (event?.type !== 'string') {
-      throw new Error('event should be a string multipart value')
-    }
-    expect(JSON.parse(event.value)).toEqual({
-      type: 'miniprogram_sourcemap',
-      service: 'my-mp',
-      version: '1.2.3',
-      cli_version: version,
-    })
-    expect(JSON.parse(event.value)).not.toHaveProperty('appid')
+    expect(code).toBe(1)
+    expect(uploadImplementation).not.toHaveBeenCalled()
   })
 
   test("returns non-zero when zip path doesn't exist", async () => {
