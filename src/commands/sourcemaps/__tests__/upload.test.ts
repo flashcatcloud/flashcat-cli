@@ -43,6 +43,30 @@ describe('upload', () => {
     })
   })
 
+  describe('getMinifiedURL: minified file path uses Windows separators', () => {
+    test('should return URL paths with forward slashes', () => {
+      const command = new UploadCommand()
+      command['basePath'] = 'dist'
+      command['minifiedPathPrefix'] = '/dist'
+      expect(command['getMinifiedURLAndRelativePath']('dist\\js\\common.min.js')).toStrictEqual([
+        '/dist/js/common.min.js',
+        '/js/common.min.js',
+      ])
+    })
+  })
+
+  describe('getMinifiedURL: minifiedPathPrefix uses Windows separators', () => {
+    test('should return URL paths with forward slashes', () => {
+      const command = new UploadCommand()
+      command['basePath'] = 'dist'
+      command['minifiedPathPrefix'] = '\\dist'
+      expect(command['getMinifiedURLAndRelativePath']('dist\\js\\common.min.js')).toStrictEqual([
+        '/dist/js/common.min.js',
+        '/js/common.min.js',
+      ])
+    })
+  })
+
   describe('isMinifiedPathPrefixValid: full URL', () => {
     test('should return true', () => {
       const command = new UploadCommand()
@@ -65,6 +89,15 @@ describe('upload', () => {
     test('should return true', () => {
       const command = new UploadCommand()
       command['minifiedPathPrefix'] = '/js'
+
+      expect(command['isMinifiedPathPrefixValid']()).toBe(true)
+    })
+  })
+
+  describe('isMinifiedPathPrefixValid: leading Windows separator', () => {
+    test('should return true', () => {
+      const command = new UploadCommand()
+      command['minifiedPathPrefix'] = '\\js'
 
       expect(command['isMinifiedPathPrefixValid']()).toBe(true)
     })

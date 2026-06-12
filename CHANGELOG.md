@@ -16,6 +16,16 @@
 
 ---
 
+## v0.1.3
+
+- 🐛 Normalize Windows path separators when building JavaScript sourcemap `minified_url` values
+- 🐛 Accept Windows-style absolute `--minified-path-prefix` values such as `\dist`
+- 🐛 Avoid reporting backend payload validation errors as invalid `FLASHCAT_API_KEY` errors
+
+## v0.1.2
+
+- 🐛 Prepare CLI release package
+
 ## v0.1.1
 
 - ✨ Add WeChat miniprogram sourcemap zip upload command

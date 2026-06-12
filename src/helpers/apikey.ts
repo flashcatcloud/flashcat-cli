@@ -41,7 +41,7 @@ class ApiKeyValidatorImplem {
     if (error.response === undefined) {
       return;
     }
-    if (error.response.status === 403 || error.response.status === 400) {
+    if (error.response.status === 401 || error.response.status === 403) {
       throw new InvalidConfigurationError(
         `${chalk.red.bold(
           "FLASHCAT_API_KEY"
