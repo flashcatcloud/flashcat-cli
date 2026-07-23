@@ -33,6 +33,7 @@ export class UploadMiniprogramCommand extends Command {
   private service = Option.String('--service')
   private releaseVersion = Option.String('--release-version')
   private sourcemapZip = Option.String('--sourcemap-zip')
+  private appid = Option.String('--appid')
   private dryRun = Option.Boolean('--dry-run', false)
   private quiet = Option.Boolean('--quiet', false)
 
@@ -111,6 +112,9 @@ export class UploadMiniprogramCommand extends Command {
       service: this.service!,
       version: this.releaseVersion!,
       cli_version: this.cliVersion,
+    }
+    if (this.appid) {
+      eventMeta.appid = this.appid
     }
 
     const content = new Map<string, MultipartValue>([
