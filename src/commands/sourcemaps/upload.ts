@@ -29,7 +29,7 @@ import {
   renderSuccessfulCommand,
   renderUpload,
 } from './renderer'
-import {getMinifiedFilePath} from './utils'
+import {getMinifiedFilePath, stripLocalFileProtocol} from './utils'
 import {InvalidPayload, validatePayload} from './validation'
 
 export class UploadCommand extends Command {
@@ -50,6 +50,10 @@ export class UploadCommand extends Command {
       [
         'Upload all sourcemaps in /home/users/ci with 50 concurrent uploads',
         'flashcat-cli sourcemaps upload /home/users/ci --service my-service --minified-path-prefix https://static.flashcat.com --release-version 1.234 --max-concurrency 50',
+      ],
+      [
+        'Upload sourcemaps for an Electron renderer bundle loaded over file://',
+        'flashcat-cli sourcemaps upload ./dist --service my-app --minified-path-prefix "file:///Applications/My.app/Contents/Resources/app.asar/dist" --release-version 1.234',
       ],
     ],
   })
@@ -91,6 +95,11 @@ export class UploadCommand extends Command {
 
       return 1
     }
+
+    // Electron renderer bundles are loaded over file://, so users naturally copy the prefix
+    // straight out of a stack frame. The intake keys sourcemaps by URL path only, so reduce
+    // it to the plain absolute path it denotes.
+    this.minifiedPathPrefix = stripLocalFileProtocol(this.minifiedPathPrefix)
 
     if (!this.isMinifiedPathPrefixValid()) {
       this.context.stdout.write(renderInvalidPrefix)

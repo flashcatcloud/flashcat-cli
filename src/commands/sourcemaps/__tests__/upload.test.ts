@@ -149,7 +149,7 @@ describe('upload', () => {
 })
 
 describe('execute', () => {
-  const runCLI = async (path: string) => {
+  const runCLI = async (path: string, minifiedPathPrefix = 'https://static.com/js') => {
     const cli = makeCli()
     const context = createMockContext() as any
     process.env = {FLASHCAT_API_KEY: 'PLACEHOLDER'}
@@ -163,7 +163,7 @@ describe('execute', () => {
         '--service',
         'test-service',
         '--minified-path-prefix',
-        'https://static.com/js',
+        minifiedPathPrefix,
         '--dry-run',
       ],
       context
@@ -216,6 +216,28 @@ describe('execute', () => {
       projectPath: '',
       service: 'test-service',
       sourcemapsPaths: [`${process.cwd()}/src/commands/sourcemaps/__tests__/fixtures/basic/common.min.js.map`],
+      version: '1234',
+    })
+  })
+
+  // Electron renderer bundles are loaded over file://, so their stack frame URLs read
+  // `file:///<install dir>/dist/renderer.js`. The intake keys sourcemaps by URL path only,
+  // so the prefix is reduced to that path and the resulting minified URL matches the frame.
+  test('file:// minified path prefix', async () => {
+    const {context, code} = await runCLI(
+      './src/commands/sourcemaps/__tests__/fixtures/basic',
+      'file:///Applications/My.app/Contents/Resources/app.asar/dist'
+    )
+    const output = context.stdout.toString().split(os.EOL)
+    expect(code).toBe(0)
+    checkConsoleOutput(output, {
+      basePath: 'src/commands/sourcemaps/__tests__/fixtures/basic',
+      concurrency: 20,
+      jsFilesURLs: ['/Applications/My.app/Contents/Resources/app.asar/dist/common.min.js'],
+      minifiedPathPrefix: '/Applications/My.app/Contents/Resources/app.asar/dist',
+      projectPath: '',
+      service: 'test-service',
+      sourcemapsPaths: ['src/commands/sourcemaps/__tests__/fixtures/basic/common.min.js.map'],
       version: '1234',
     })
   })

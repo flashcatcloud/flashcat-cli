@@ -38,6 +38,10 @@ The folder structure should match the structure of the served static files.
 Example: if you're uploading `dist/file.js` to `https://example.com/static/file.js`, you can use `flashcat-cli sourcemaps upload ./dist --minified-path-prefix https://example.com/static/` or `flashcat-cli sourcemaps upload ./dist --minified-path-prefix /static/`.
 `--minified-path-prefix /` is a valid input when you upload JS at the root directory of the server.
 
+  A local file URL (`file://`) is also accepted, for renderer bundles that are loaded from disk rather than served over HTTP — typically Electron. Flashcat matches sourcemaps on the URL *path* only, so `file:///Applications/My.app/Contents/Resources/app.asar/dist` and `/Applications/My.app/Contents/Resources/app.asar/dist` are equivalent, and either matches a stack frame reading `file:///Applications/My.app/Contents/Resources/app.asar/dist/renderer.js`.
+
+  > **Electron:** the path a `file://` frame reports is the *installed* location of the bundle, which differs between your build machine and your users' machines (and, on Windows and Linux, between users). Passing a build-time path only works when the install location is fixed. Otherwise, rewrite the frame URLs to a stable virtual prefix in the RUM SDK's `beforeSend` and upload with that prefix instead.
+
 In addition, some optional parameters are available:
 
 * `--max-concurrency` (default: `20`): number of concurrent upload to the API.

@@ -19,7 +19,7 @@ export const renderSourcesNotFoundWarning = (sourcemap: string) =>
 export const renderConfigurationError = (error: Error) => chalk.red(`${ICONS.FAILED} Configuration error: ${error}.\n`)
 
 export const renderInvalidPrefix = chalk.red(
-  `${ICONS.FAILED} --minified-path-prefix should either be an URL (such as "http://example.com/static") or an absolute path starting with a / such as "/static"\n`
+  `${ICONS.FAILED} --minified-path-prefix should either be an URL (such as "http://example.com/static"), a local file URL (such as "file:///Applications/My.app/Contents/Resources/app.asar/dist"), or an absolute path starting with a / such as "/static"\n`
 )
 
 export const renderMinifiedPathPrefixMisusage = (sourcemap: Sourcemap, repeated: string) =>
