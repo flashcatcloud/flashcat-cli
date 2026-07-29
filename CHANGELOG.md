@@ -16,6 +16,10 @@
 
 ---
 
+## v0.2.0
+
+- ✨ New `flutter-symbols upload` command: uploads the `app.<platform>-<arch>.symbols` debug companions produced by `flutter build --obfuscate --split-debug-info=<dir>`, so obfuscated Dart AOT crash stacks are de-obfuscated in the RUM console
+
 ## v0.1.3
 
 - 🐛 Normalize Windows path separators when building JavaScript sourcemap `minified_url` values
