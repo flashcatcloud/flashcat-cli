@@ -97,6 +97,7 @@ export class UploadCommand extends Command {
 
       return 1
     }
+    this.minifiedPathPrefix = this.getNormalizedMinifiedPathPrefix()
 
     // Normalizing the basePath to resolve .. and .
     // Always using the posix version to avoid \ on Windows.
@@ -174,9 +175,11 @@ export class UploadCommand extends Command {
   }
 
   private getMinifiedURLAndRelativePath(minifiedFilePath: string): [string, string] {
-    const relativePath = minifiedFilePath.replace(this.basePath, '')
+    const normalizedMinifiedFilePath = minifiedFilePath.replace(/\\/g, '/')
+    const normalizedBasePath = this.basePath.replace(/\\/g, '/')
+    const relativePath = normalizedMinifiedFilePath.replace(normalizedBasePath, '')
 
-    return [buildPath(this.minifiedPathPrefix!, relativePath), relativePath]
+    return [buildPath(this.getNormalizedMinifiedPathPrefix(), relativePath), relativePath]
   }
 
   private getPayloadsToUpload = async (useGit: boolean): Promise<Sourcemap[]> => {
@@ -240,18 +243,23 @@ export class UploadCommand extends Command {
 
   private isMinifiedPathPrefixValid(): boolean {
     let host
+    const minifiedPathPrefix = this.getNormalizedMinifiedPathPrefix()
     try {
-      const objUrl = new URL(this.minifiedPathPrefix!)
+      const objUrl = new URL(minifiedPathPrefix)
       host = objUrl.host
     } catch {
       // Do nothing.
     }
 
-    if (!host && !this.minifiedPathPrefix!.startsWith('/')) {
+    if (!host && !minifiedPathPrefix.startsWith('/')) {
       return false
     }
 
     return true
+  }
+
+  private getNormalizedMinifiedPathPrefix(): string {
+    return this.minifiedPathPrefix!.replace(/\\/g, '/')
   }
 
   private upload(
