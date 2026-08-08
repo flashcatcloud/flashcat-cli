@@ -16,6 +16,10 @@
 
 ---
 
+## v0.3.0
+
+- ✨ New `electron-symbols upload` command: uploads the Breakpad symbol files (`.sym`) for an Electron application, so native crash stacks are resolved to function names and line numbers in the RUM console instead of showing bare module names and addresses
+
 ## v0.2.0
 
 - ✨ New `flutter-symbols upload` command: uploads the `app.<platform>-<arch>.symbols` debug companions produced by `flutter build --obfuscate --split-debug-info=<dir>`, so obfuscated Dart AOT crash stacks are de-obfuscated in the RUM console
