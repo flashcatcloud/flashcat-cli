@@ -16,6 +16,14 @@
 
 ---
 
+## v0.4.1
+
+- ✨ `sourcemaps upload-react-native` warns when the bundle file name is not the platform's default runtime bundle name (`index.android.bundle` / `main.jsbundle`): symbolication matches stack frames by file name, so an upload renamed in CI never matches the name the app loads at runtime. Warning only — the exit code and the upload are unchanged
+
+## v0.4.0
+
+- ✨ New `sourcemaps upload-react-native` command: uploads a React Native JS bundle and its Metro sourcemap (`--platform ios|android`), so minified React Native error stacks are resolved to original files and lines in the RUM console
+
 ## v0.3.0
 
 - ✨ New `electron-symbols upload` command: uploads the Breakpad symbol files (`.sym`) for an Electron application, so native crash stacks are resolved to function names and line numbers in the RUM console instead of showing bare module names and addresses
