@@ -204,6 +204,54 @@ describe('UploadReactNativeCommand', () => {
     expect(context.stdout.toString()).toContain('platform=ios')
     expect(mockedUpload).not.toHaveBeenCalled()
   })
+
+  test('warns when the bundle name is not the platform runtime default', async () => {
+    const {bundlePath, sourcemapPath} = createBundleFixtures()
+
+    const {code, context} = await runCLI([
+      'sourcemaps',
+      'upload-react-native',
+      '--platform',
+      'android',
+      '--service',
+      'my-app',
+      '--release-version',
+      '1.2.3',
+      '--bundle',
+      bundlePath,
+      '--sourcemap',
+      sourcemapPath,
+      '--dry-run',
+    ])
+
+    expect(code).toBe(0)
+    expect(context.stderr.toString()).toContain(
+      "bundle file name 'index.bundle' is not the default android runtime bundle name 'index.android.bundle'"
+    )
+  })
+
+  test('does not warn when the bundle name matches the platform runtime default', async () => {
+    const {bundlePath, sourcemapPath} = createBundleFixtures('main.jsbundle')
+
+    const {code, context} = await runCLI([
+      'sourcemaps',
+      'upload-react-native',
+      '--platform',
+      'ios',
+      '--service',
+      'my-app',
+      '--release-version',
+      '1.2.3',
+      '--bundle',
+      bundlePath,
+      '--sourcemap',
+      sourcemapPath,
+      '--dry-run',
+    ])
+
+    expect(code).toBe(0)
+    expect(context.stderr.toString()).toBe('')
+  })
 })
 
 const runCLI = async (args: string[]) => {
@@ -235,10 +283,10 @@ const createMockContext = () => {
   }
 }
 
-const createBundleFixtures = () => {
+const createBundleFixtures = (bundleName = 'index.bundle') => {
   const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'flashcat-react-native-test-'))
-  const bundlePath = path.join(directory, 'index.bundle')
-  const sourcemapPath = path.join(directory, 'index.bundle.map')
+  const bundlePath = path.join(directory, bundleName)
+  const sourcemapPath = path.join(directory, `${bundleName}.map`)
   fs.writeFileSync(bundlePath, 'bundle-content')
   fs.writeFileSync(sourcemapPath, 'sourcemap-content')
 

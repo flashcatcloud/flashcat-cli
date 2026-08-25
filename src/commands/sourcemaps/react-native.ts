@@ -14,6 +14,14 @@ import {version} from '../../helpers/version'
 
 const REACT_NATIVE_PLATFORMS = ['ios', 'android']
 
+// The bundle name each platform loads at runtime unless the app overrides it.
+// Symbolication matches stack frames against the uploaded file name, so an
+// upload renamed in CI (a unified --bundle-output is common) never matches.
+const DEFAULT_RUNTIME_BUNDLE_NAMES: Record<string, string> = {
+  android: 'index.android.bundle',
+  ios: 'main.jsbundle',
+}
+
 export class UploadReactNativeCommand extends Command {
   public static paths = [['sourcemaps', 'upload-react-native']]
 
@@ -95,6 +103,21 @@ export class UploadReactNativeCommand extends Command {
       this.context.stderr.write(`File not found: ${sourcemapPath}\n`)
 
       return 1
+    }
+
+    // Warn, never block: apps that override the runtime bundle name are a
+    // legitimate case, but a name that only differs on the upload side means
+    // the sourcemap will never be hit.
+    const bundleName = path.basename(bundlePath)
+    const runtimeName = DEFAULT_RUNTIME_BUNDLE_NAMES[this.platform]
+    if (bundleName !== runtimeName) {
+      this.context.stderr.write(
+        chalk.yellow(
+          `Warning: bundle file name '${bundleName}' is not the default ${this.platform} runtime bundle name '${runtimeName}'.\n` +
+            `Symbolication matches stack frames by file name, so the uploaded name must equal the name the app loads at runtime.\n` +
+            `If your app loads '${runtimeName}', rename the file before uploading; if it really loads '${bundleName}', ignore this warning.\n`
+        )
+      )
     }
 
     const apiKeyValidator = newApiKeyValidator({
