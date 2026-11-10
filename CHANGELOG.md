@@ -16,6 +16,10 @@
 
 ---
 
+## v0.4.2
+
+- 🐛 `dsyms upload` no longer skips dSYM bundles that contain several thin object files (e.g. `MyApp` + `MyApp.debug.dylib` from Xcode debug builds): single-slice object files are copied as is instead of being passed to `lipo -thin`, which rejects thin input
+
 ## v0.4.1
 
 - ✨ `sourcemaps upload-react-native` warns when the bundle file name is not the platform's default runtime bundle name (`index.android.bundle` / `main.jsbundle`): symbolication matches stack frames by file name, so an upload renamed in CI never matches the name the app loads at runtime. Warning only — the exit code and the upload are unchanged
