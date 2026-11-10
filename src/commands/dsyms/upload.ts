@@ -228,7 +228,7 @@ export class UploadCommand extends Command {
   };
 
   /**
-   * It takes fat dSYM as input and returns multiple dSYMs by extracting **each arch**
+   * It takes a dSYM with several arch slices (one fat object file, or several object files) and returns multiple dSYMs by extracting **each slice**
    * to separate dSYM file. New files are saved to `intermediatePath` and named by their object uuid (`<uuid>.dSYM`).
    *
    * For example, given `<source path>/Foo.dSYM/Contents/Resources/DWARF/Foo` dSYM with two arch slices: `arm64` (uuid1)
@@ -253,9 +253,18 @@ export class UploadCommand extends Command {
           path.relative(dsym.bundlePath, slice.objectPath)
         );
 
-        // Extract arch slice:
+        // Extract arch slice. A dSYM bundle may hold several object files (e.g. `MyApp` and
+        // `MyApp.debug.dylib` from Xcode debug builds); an object file with a single slice is
+        // already thin and `lipo -thin` rejects it, so copy it as is.
         await promises.mkdir(path.dirname(newObjectPath), { recursive: true });
-        await executeLipo(slice.objectPath, slice.arch, newObjectPath);
+        const isFatObject =
+          dsym.slices.filter((s) => s.objectPath === slice.objectPath).length >
+          1;
+        if (isFatObject) {
+          await executeLipo(slice.objectPath, slice.arch, newObjectPath);
+        } else {
+          await promises.copyFile(slice.objectPath, newObjectPath);
+        }
 
         // The original dSYM bundle can also include `Info.plist` file, so copy it to the `<uuid>.dSYM` as well.
         // Ref.: https://opensource.apple.com/source/lldb/lldb-179.1/www/symbols.html
